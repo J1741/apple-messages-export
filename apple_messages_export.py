@@ -16,7 +16,13 @@ EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 # TODO: select only needed data
 # TODO: add joins to other tables
 # TODO: move query into separate file
-sql_query = "SELECT * FROM message"
+sql_query = """SELECT
+    ROWID,
+    datetime(date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS timestamp,
+    text
+FROM message
+WHERE
+    ROWID=42226"""
 
 
 def main():
@@ -43,13 +49,13 @@ def main():
         for row in cur.execute(sql_query):
 
             id = row['ROWID']
-            date = row['date']
+            timestamp = row['timestamp']
 
             # render message content without newlines, but with emojis
             content = repr(row['text'])[1:-1]
 
             # TODO: write additional data to export file
-            data = [id, date, content]
+            data = [id, timestamp, content]
             tsv_writer.writerow(data)
 
         print(f"Exported messages to {EXPORT_FILE}")
