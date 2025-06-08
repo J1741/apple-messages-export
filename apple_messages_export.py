@@ -13,16 +13,17 @@ CHATDB_FILE = os.getenv("CHATDB_FILE")
 EXPORT_DIR = os.getenv("EXPORT_DIR")
 EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 
-# TODO: select only needed data
 # TODO: add joins to other tables
 # TODO: move query into separate file
 sql_query = """SELECT
-    ROWID,
-    datetime(date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS timestamp,
-    text
-FROM message
+    m.ROWID AS message_id,
+    datetime(m.date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS date,
+    m.text as text,
+    CASE WHEN m.is_from_me=1 THEN 'me' ELSE h.id END AS 'sender'
+FROM message m
+LEFT JOIN handle h ON m.handle_id=h.ROWID
 WHERE
-    ROWID=42226"""
+    m.ROWID=42226"""
 
 
 def main():
@@ -44,18 +45,22 @@ def main():
                                 escapechar='\\',
                                 lineterminator='\n')
 
+        fieldnames = ["message_id", "date", "sender", "text"]
+        tsv_writer.writerow(fieldnames)
+
         # select message info
         print("Exporting message data ..")
         for row in cur.execute(sql_query):
 
-            id = row['ROWID']
-            timestamp = row['timestamp']
+            message_id = row['message_id']
+            date = row['date']
+            sender = row['sender']
 
             # render message content without newlines, but with emojis
-            content = repr(row['text'])[1:-1]
+            text = repr(row['text'])[1:-1]
 
             # TODO: write additional data to export file
-            data = [id, timestamp, content]
+            data = [message_id, date, sender, text]
             tsv_writer.writerow(data)
 
         print(f"Exported messages to {EXPORT_FILE}")
