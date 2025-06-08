@@ -13,7 +13,6 @@ CHATDB_FILE = os.getenv("CHATDB_FILE")
 EXPORT_DIR = os.getenv("EXPORT_DIR")
 EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 
-# TODO: add joins to other tables
 # TODO: move query into separate file
 sql_query = """SELECT
     m.ROWID AS message_id,
@@ -25,6 +24,7 @@ LEFT JOIN handle h ON m.handle_id=h.ROWID
 WHERE
     m.ROWID=42226"""
 
+# TODO: add query to get chat members
 
 def main():
 
@@ -37,6 +37,9 @@ def main():
 
     cur = conn.cursor()
 
+    # TODO: add cursor to get chat members
+    # TODO: store chat members as dictionary
+
     # set up file for message export
     with open(EXPORT_FILE, 'w') as tsv_file:
         tsv_writer = csv.writer(tsv_file,
@@ -45,6 +48,7 @@ def main():
                                 escapechar='\\',
                                 lineterminator='\n')
 
+        # add header
         fieldnames = ["message_id", "date", "sender", "text"]
         tsv_writer.writerow(fieldnames)
 
@@ -59,7 +63,9 @@ def main():
             # render message content without newlines, but with emojis
             text = repr(row['text'])[1:-1]
 
-            # TODO: write additional data to export file
+            # TODO: add chat identifier to export file
+            # TODO: add chat members to export file
+
             data = [message_id, date, sender, text]
             tsv_writer.writerow(data)
 
