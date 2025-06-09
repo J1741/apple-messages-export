@@ -76,7 +76,7 @@ def main():
                                 lineterminator='\n')
 
         # add header
-        fieldnames = ["message_id", "date", "sender", "recipient", "text"
+        fieldnames = ["message_id", "date", "sender", "recipient", "text",
                       "chat_identifier", "chat_members"]
 
         tsv_writer.writerow(fieldnames)
