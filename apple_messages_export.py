@@ -15,8 +15,7 @@ EXPORT_TIME = time.strftime('%Y%m%d_%H%M%S', ts)
 # get input and output files and locations
 CHATDB_FILE = os.getenv("CHATDB_FILE")
 EXPORT_DIR = os.getenv("EXPORT_DIR")
-EXPORT_FILE = os.path.join(EXPORT_DIR,
-                           "apple_messages_export_" + EXPORT_TIME + ".tsv")
+EXPORT_FILE = os.path.join(EXPORT_DIR, f"messages_export_{EXPORT_TIME}.tsv")
 
 # TODO: move queries into separate files
 sql_query_1 = "SELECT DISTINCT chat_identifier FROM chat"
@@ -42,6 +41,7 @@ FROM message m
     LEFT JOIN chat_message_join cm on m.ROWID=cm.message_id
     LEFT JOIN chat c ON cm.chat_id=c.ROWID
 """
+
 
 def main():
 
@@ -74,12 +74,12 @@ def main():
     with open(EXPORT_FILE, 'w') as tsv_file:
         tsv_writer = csv.writer(tsv_file,
                                 delimiter='\t',
-                                quoting=csv.QUOTE_NONE,
+                                quoting=csv.NONE,
                                 escapechar='\\',
                                 lineterminator='\n')
 
-        fieldnames = ["message_id", "date", "sender", "recipient", "text",
-                      "chat_identifier", "chat_members"]
+        fieldnames = ["export_id", "message_id", "date", "sender", "recipient",
+                      "text", "chat_identifier", "chat_members"]
 
         # add header
         tsv_writer.writerow(fieldnames)
@@ -87,9 +87,12 @@ def main():
         # select message info
         print("Exporting message data ..")
 
-        export_counter = 0
+        # provide unique id in case the same message id occurs in multiple chats
+        export_id = 0
 
         for res3_row in cursor3.execute(sql_query_3):
+
+            export_id += 1
 
             message_id = res3_row['message_id']
             date = res3_row['date']
@@ -107,14 +110,13 @@ def main():
             else:
                 chat_members = chat_dict[chat_identifier]
 
-            export_data = [message_id, date, sender, recipient, text,
-                    chat_identifier, chat_members]
+            export_data = [export_id, message_id, date, sender, recipient,
+                           text, chat_identifier, chat_members]
 
             # output data
             tsv_writer.writerow(export_data)
-            export_counter += 1
 
-        print(f"Success! Exported {export_counter} messages to: {EXPORT_FILE}")
+        print(f"Success! Exported {export_id} messages to: {EXPORT_FILE}")
 
     conn.close()
 
