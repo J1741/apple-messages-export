@@ -24,7 +24,6 @@ LEFT JOIN handle h ON m.handle_id=h.ROWID
 WHERE
     m.ROWID=42226"""
 
-# TODO: add query to get chat members
 
 def main():
 
@@ -35,10 +34,10 @@ def main():
     # return results as Row objects (rather than tuples)
     conn.row_factory = sqlite3.Row
 
-    cur = conn.cursor()
+    # TODO: get list of chat identifiers
+    # TODO: get dictionary of chat identifiers -- members
 
-    # TODO: add cursor to get chat members
-    # TODO: store chat members as dictionary
+    cur = conn.cursor()
 
     # set up file for message export
     with open(EXPORT_FILE, 'w') as tsv_file:
