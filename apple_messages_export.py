@@ -40,11 +40,10 @@ FROM message m
 
 def main():
 
-    # connect to database
     print(f"Connecting to {CHATDB_FILE} ..")
-    conn = sqlite3.connect(CHATDB_FILE)
 
-    # return results as Row objects (rather than tuples)
+    # connect to database and return results as Row objects (rather than tuples)
+    conn = sqlite3.connect(CHATDB_FILE)
     conn.row_factory = sqlite3.Row
 
     # get list of chat identifiers
@@ -53,6 +52,7 @@ def main():
     res1 = cursor1.execute(sql_query_1)
     res1_list = res1.fetchall()
 
+    # pull chat identifiers out of tuples
     chat_identifiers = [item['chat_identifier'] for item in res1_list]
 
     # get mapping of chat identifiers to members
@@ -73,10 +73,10 @@ def main():
                                 escapechar='\\',
                                 lineterminator='\n')
 
-        # add header
         fieldnames = ["message_id", "date", "sender", "recipient", "text",
                       "chat_identifier", "chat_members"]
 
+        # add header
         tsv_writer.writerow(fieldnames)
 
         # select message info
@@ -91,7 +91,7 @@ def main():
             sender = res3_row['sender']
             recipient = res3_row['recipient']
 
-            # render message content without newlines, but with emojis
+            # render message text without newlines or extra quotes, but keep emojis
             text = repr(res3_row['text'])[1:-1]
 
             chat_identifier = res3_row['chat_identifier']
@@ -109,7 +109,7 @@ def main():
             tsv_writer.writerow(export_data)
             export_counter += 1
 
-        print(f"Exported {export_counter} messages to {EXPORT_FILE}")
+        print(f"Success! Exported {export_counter} messages to: {EXPORT_FILE}")
 
     conn.close()
 
