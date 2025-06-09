@@ -78,7 +78,7 @@ def main():
 
         # add header
         fieldnames = ["message_id", "date", "sender", "recipient", "text"
-                      "chat_identifier"]
+                      "chat_identifier", "chat_members"]
 
         tsv_writer.writerow(fieldnames)
 
@@ -94,13 +94,13 @@ def main():
             # render message content without newlines, but with emojis
             text = repr(row['text'])[1:-1]
 
-            # TODO: add chat identifier to export file
             chat_identifier = row['chat_identifier']
 
             # TODO: add chat members to export file
+            chat_members = chat_dict[chat_identifier]
 
             data = [message_id, date, sender, recipient, text,
-                    chat_identifier]
+                    chat_identifier, chat_members]
 
             tsv_writer.writerow(data)
 
