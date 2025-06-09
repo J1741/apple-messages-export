@@ -14,7 +14,7 @@ EXPORT_DIR = os.getenv("EXPORT_DIR")
 EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 
 # TODO: move queries into separate files
-sql_query_1 = "SELECT DISTINCT chat_identifier from chat LIMIT 5"
+sql_query_1 = "SELECT DISTINCT chat_identifier from chat"
 
 sql_query_2 = """SELECT
     c.chat_identifier,
@@ -48,14 +48,19 @@ def main():
     # get list of chat identifiers
     cursor1 = conn.cursor()
 
-    res = cursor1.execute(sql_query_1)
-    res_list = res.fetchall()
+    res1 = cursor1.execute(sql_query_1)
+    res1_list = res1.fetchall()
 
-    chat_identifiers = [item['chat_identifier'] for item in res_list]
-    print(chat_identifiers)
+    chat_identifiers = [item['chat_identifier'] for item in res1_list]
+    print("# of chats.............:", len(chat_identifiers))
 
-    # TODO: get dictionary of chat identifiers -- members
+    # get mapping of chat identifiers to members
     cursor2 = conn.cursor()
+    chat_dict = {}
+
+    for chat_identifier in chat_identifiers:
+        for res2_row in cursor2.execute(sql_query_2, (chat_identifier,)):
+            chat_dict[res2_row['chat_identifier']] = res2_row['chat_members']
 
     cursor3 = conn.cursor()
 
