@@ -55,7 +55,6 @@ def main():
     res1_list = res1.fetchall()
 
     chat_identifiers = [item['chat_identifier'] for item in res1_list]
-    print("# of chats.............:", len(chat_identifiers))
 
     # get mapping of chat identifiers to members
     cursor2 = conn.cursor()
@@ -83,17 +82,17 @@ def main():
 
         # select message info
         print("Exporting message data ..")
-        for row in cursor3.execute(sql_query_3):
+        for res3_row in cursor3.execute(sql_query_3):
 
-            message_id = row['message_id']
-            date = row['date']
-            sender = row['sender']
-            recipient = row['recipient']
+            message_id = res3_row['message_id']
+            date = res3_row['date']
+            sender = res3_row['sender']
+            recipient = res3_row['recipient']
 
             # render message content without newlines, but with emojis
-            text = repr(row['text'])[1:-1]
+            text = repr(res3_row['text'])[1:-1]
 
-            chat_identifier = row['chat_identifier']
+            chat_identifier = res3_row['chat_identifier']
 
             # add chat members to export file
             if chat_identifier == "none":
@@ -101,10 +100,10 @@ def main():
             else:
                 chat_members = chat_dict[chat_identifier]
 
-            data = [message_id, date, sender, recipient, text,
+            export_data = [message_id, date, sender, recipient, text,
                     chat_identifier, chat_members]
 
-            tsv_writer.writerow(data)
+            tsv_writer.writerow(export_data)
 
         print(f"Exported messages to {EXPORT_FILE}")
 
