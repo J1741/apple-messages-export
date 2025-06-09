@@ -15,7 +15,8 @@ EXPORT_TIME = time.strftime('%Y%m%d_%H%M%S', ts)
 # get input and output files and locations
 CHATDB_FILE = os.getenv("CHATDB_FILE")
 EXPORT_DIR = os.getenv("EXPORT_DIR")
-EXPORT_FILE = os.path.join(EXPORT_DIR, f"messages_export_{EXPORT_TIME}.tsv")
+EXPORT_FILE = os.path.join(EXPORT_DIR,
+                           f"apple_messages_export_{EXPORT_TIME}.tsv")
 
 # TODO: move queries into separate files
 sql_query_1 = "SELECT DISTINCT chat_identifier FROM chat"
@@ -74,7 +75,7 @@ def main():
     with open(EXPORT_FILE, 'w') as tsv_file:
         tsv_writer = csv.writer(tsv_file,
                                 delimiter='\t',
-                                quoting=csv.NONE,
+                                quoting=csv.QUOTE_NONE,
                                 escapechar='\\',
                                 lineterminator='\n')
 
