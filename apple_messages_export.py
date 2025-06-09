@@ -37,7 +37,6 @@ FROM message m
     LEFT JOIN chat_message_join cm on m.ROWID=cm.message_id
     LEFT JOIN chat c ON cm.chat_id=c.ROWID
 """
-# 'EMPTY_TBD' AS chat_identifier
 
 def main():
 
@@ -82,6 +81,9 @@ def main():
 
         # select message info
         print("Exporting message data ..")
+
+        export_counter = 0
+
         for res3_row in cursor3.execute(sql_query_3):
 
             message_id = res3_row['message_id']
@@ -103,9 +105,11 @@ def main():
             export_data = [message_id, date, sender, recipient, text,
                     chat_identifier, chat_members]
 
+            # output data
             tsv_writer.writerow(export_data)
+            export_counter += 1
 
-        print(f"Exported messages to {EXPORT_FILE}")
+        print(f"Exported {export_counter} messages to {EXPORT_FILE}")
 
     conn.close()
 
