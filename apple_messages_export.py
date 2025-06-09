@@ -13,8 +13,19 @@ CHATDB_FILE = os.getenv("CHATDB_FILE")
 EXPORT_DIR = os.getenv("EXPORT_DIR")
 EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 
-# TODO: move query into separate file
-sql_query = """SELECT
+# TODO: move queries into separate files
+sql_query_1 = "SELECT DISTINCT chat_identifier from chat LIMIT 5"
+
+sql_query_2 = """SELECT
+    c.chat_identifier,
+    group_concat(h.id) AS chat_members
+FROM chat c
+JOIN chat_handle_join ch on c.ROWID=ch.chat_id
+JOIN handle h on ch.handle_id=h.ROWID
+WHERE c.chat_identifier = ?
+"""
+
+sql_query_3 = """SELECT
     m.ROWID AS message_id,
     datetime(m.date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS date,
     m.text as text,
@@ -34,10 +45,19 @@ def main():
     # return results as Row objects (rather than tuples)
     conn.row_factory = sqlite3.Row
 
-    # TODO: get list of chat identifiers
-    # TODO: get dictionary of chat identifiers -- members
+    # get list of chat identifiers
+    cursor1 = conn.cursor()
 
-    cur = conn.cursor()
+    res = cursor1.execute(sql_query_1)
+    res_list = res.fetchall()
+
+    chat_identifiers = [item['chat_identifier'] for item in res_list]
+    print(chat_identifiers)
+
+    # TODO: get dictionary of chat identifiers -- members
+    cursor2 = conn.cursor()
+
+    cursor3 = conn.cursor()
 
     # set up file for message export
     with open(EXPORT_FILE, 'w') as tsv_file:
@@ -53,7 +73,7 @@ def main():
 
         # select message info
         print("Exporting message data ..")
-        for row in cur.execute(sql_query):
+        for row in cursor3.execute(sql_query_3):
 
             message_id = row['message_id']
             date = row['date']
