@@ -14,24 +14,28 @@ EXPORT_DIR = os.getenv("EXPORT_DIR")
 EXPORT_FILE = os.path.join(EXPORT_DIR, "messages_export.tsv")
 
 # TODO: move queries into separate files
-sql_query_1 = "SELECT DISTINCT chat_identifier from chat"
+sql_query_1 = "SELECT DISTINCT chat_identifier FROM chat"
 
 sql_query_2 = """SELECT
     c.chat_identifier,
     group_concat(h.id) AS chat_members
 FROM chat c
-JOIN chat_handle_join ch on c.ROWID=ch.chat_id
-JOIN handle h on ch.handle_id=h.ROWID
+    JOIN chat_handle_join ch ON c.ROWID=ch.chat_id
+    JOIN handle h ON ch.handle_id=h.ROWID
 WHERE c.chat_identifier = ?
 """
 
 sql_query_3 = """SELECT
     m.ROWID AS message_id,
     datetime(m.date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS date,
-    m.text as text,
-    CASE WHEN m.is_from_me=1 THEN 'me' ELSE h.id END AS 'sender'
+    m.text AS text,
+    CASE WHEN m.is_from_me=1 THEN 'me' ELSE h.id END AS 'sender',
+    CASE WHEN m.is_from_me=0 THEN 'me' ELSE c.chat_identifier END AS 'recipient',
+    c.chat_identifier
 FROM message m
-LEFT JOIN handle h ON m.handle_id=h.ROWID
+    LEFT JOIN handle h ON m.handle_id=h.ROWID
+    JOIN chat_message_join cm on m.ROWID=cm.message_id
+    JOIN chat c ON cm.chat_id=c.ROWID
 WHERE
     m.ROWID=42226"""
 
@@ -73,7 +77,9 @@ def main():
                                 lineterminator='\n')
 
         # add header
-        fieldnames = ["message_id", "date", "sender", "text"]
+        fieldnames = ["message_id", "date", "sender", "recipient", "text"
+                      "chat_identifier"]
+
         tsv_writer.writerow(fieldnames)
 
         # select message info
@@ -83,14 +89,19 @@ def main():
             message_id = row['message_id']
             date = row['date']
             sender = row['sender']
+            recipient = row['recipient']
 
             # render message content without newlines, but with emojis
             text = repr(row['text'])[1:-1]
 
             # TODO: add chat identifier to export file
+            chat_identifier = row['chat_identifier']
+
             # TODO: add chat members to export file
 
-            data = [message_id, date, sender, text]
+            data = [message_id, date, sender, recipient, text,
+                    chat_identifier]
+
             tsv_writer.writerow(data)
 
         print(f"Exported messages to {EXPORT_FILE}")
