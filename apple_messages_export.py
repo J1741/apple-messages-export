@@ -29,8 +29,8 @@ sql_query_3 = """SELECT
     m.ROWID AS message_id,
     datetime(m.date + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS date,
     m.text AS text,
-    CASE WHEN m.is_from_me=1 THEN 'me' ELSE h.id END AS 'sender',
-    CASE WHEN m.is_from_me=0 THEN 'me' ELSE h.id END AS 'recipient',
+    CASE WHEN m.is_from_me=1 THEN 'me' ELSE coalesce(nullif(h.id, ''), 'none') END AS 'sender',
+    CASE WHEN m.is_from_me=0 THEN 'me' ELSE coalesce(nullif(h.id, ''), 'none') END AS 'recipient',
     coalesce(nullif(c.chat_identifier, ''), 'none') as chat_identifier
 FROM message m
     LEFT JOIN handle h ON m.handle_id=h.ROWID
@@ -97,7 +97,7 @@ def main():
 
             # add chat members to export file
             if chat_identifier == "none":
-                chat_members = "EMPTY_NA"
+                chat_members = "NA"
             else:
                 chat_members = chat_dict[chat_identifier]
 
