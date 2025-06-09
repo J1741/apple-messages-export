@@ -1,5 +1,6 @@
 ### Custom ###
 local/
+*.db*
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/vim,macos,python
